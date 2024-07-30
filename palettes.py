@@ -53,6 +53,7 @@ def get_palette(use_dark):
 
     _red = QtGui.QColor('#FF0000')
     _green = QtGui.QColor('#00FF00')
+    _white = QtGui.QColor('#FFFFFF')
 
     # # set highlight text color depending on the lightness of the colormap
     # _highlight_color = self.cont_cmap.map(0.0, mode='qcolor')
@@ -65,12 +66,12 @@ def get_palette(use_dark):
         # palette
         palette = QtGui.QPalette()
         palette.setColor(QtGui.QPalette.ColorRole.Window,          _color_dark)
-        palette.setColor(QtGui.QPalette.ColorRole.WindowText,      _color_light)
+        palette.setColor(QtGui.QPalette.ColorRole.WindowText,      _white)#_color_light)
         palette.setColor(QtGui.QPalette.ColorRole.Button,          _color_dark)
         palette.setColor(QtGui.QPalette.ColorRole.ButtonText,      _color_light)
         palette.setColor(QtGui.QPalette.ColorRole.Base,            _color_dark)
         palette.setColor(QtGui.QPalette.ColorRole.AlternateBase,   _color_dark.lighter(110))
-        palette.setColor(QtGui.QPalette.ColorRole.Highlight,       _color_light)#_highlight_color)
+        palette.setColor(QtGui.QPalette.ColorRole.Highlight,       _color_light.darker(150))#_highlight_color)
         palette.setColor(QtGui.QPalette.ColorRole.HighlightedText, _color_dark.darker(150))#_highlight_text)
         palette.setColor(QtGui.QPalette.ColorRole.Text,            _color_light)
         palette.setColor(QtGui.QPalette.ColorRole.PlaceholderText, _color_light)

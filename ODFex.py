@@ -74,6 +74,10 @@ class ODFexplorer(QMainWindow):
         self.line_widget.setLabel('bottom', 'eta (°)')
         self.line_widget.setWindowTitle('1D Line Plot')
         self.line_widget.showGrid(x=True, y=True)
+        self.line_widget.setLimits(minYRange=1,
+                                   xMin=-10,
+                                   xMax=370,
+                                   yMin=-0.1)
         layout.addWidget(self.line_widget,1)
         
         self.line_widget.getAxis('bottom').setTickSpacing(30,1)

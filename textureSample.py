@@ -200,7 +200,8 @@ class FibreSample():
     def _updateRot(self):
         """return the rotation matrix for the current euler angles"""
         omega, chi, phi = self.omega, self.chi, self.phi
-        rot = self._R_yxy(omega, chi, phi ).T
+        # rot = self._R_yxy(omega, chi, phi ).T
+        rot = self._R_yxy(omega, chi, phi )
         self.rot = rot
         return rot
 
@@ -252,7 +253,8 @@ class FibreSample():
         """return a dictionary of azimuthal intensity variation for the current reflections"""
         S0 = self.S0
         omega, chi, phi = self.omega, self.chi, self.phi
-        rot = self._R_yxy(omega, chi, phi ).T
+        # rot = self._R_yxy(omega, chi, phi ).T
+        rot = self._R_yxy(omega, chi, phi )
         POA = rot.T@S0
         I_azis = {}
         # hkls =  np.array([key.split() for key in self.PODs_],dtype=int)

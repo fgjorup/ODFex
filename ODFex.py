@@ -44,7 +44,8 @@ class ODFexplorer(QMainWindow):
         # layout.addWidget(self.sphere_widget)
         self.sphere_window.show()
         
-        xyz = self.sphere_window.xyz
+        # xyz = self.sphere_window.xyz
+        xyz = self.sphere_window.getXyz()
         
         self.sample = FibreSample(xyz)
         self.sample.setMDparam(0.6)
@@ -56,7 +57,7 @@ class ODFexplorer(QMainWindow):
 
         tth = self.sample.tth
 
-        self.sphere_window.addCone('S0',psi=90-(tth/2),v=-self.sample.S0,color=(1,1,1,.5))
+        # self.sphere_window.addCone('S0',psi=90-(tth/2),v=-self.sample.S0,color=(1,1,1,.5))
 
         self.sphere_window.setSphereValues(ODF)
         self.sphere_window.setPOA(POA)
@@ -69,8 +70,8 @@ class ODFexplorer(QMainWindow):
         
         # Create a 1D line plot widget
         self.line_widget = pg.PlotWidget()
-        self.line_widget.setLabel('left', 'P')
-        self.line_widget.setLabel('bottom', 'eta (deg)')
+        self.line_widget.setLabel('left', 'intensity')
+        self.line_widget.setLabel('bottom', 'eta (°)')
         self.line_widget.setWindowTitle('1D Line Plot')
         self.line_widget.showGrid(x=True, y=True)
         layout.addWidget(self.line_widget,1)
@@ -85,7 +86,7 @@ class ODFexplorer(QMainWindow):
         self.apply_palette()
 
         self._init_layout(layout)
-
+        self.updatePOI()
         self.updateUC()
         self.updateSGcentering(self.combo_centering.currentText())
         self.initI_azi_plots()
@@ -129,12 +130,14 @@ class ODFexplorer(QMainWindow):
         #import cif
         self.toolbutton_cif = QtWidgets.QToolButton()
         self.toolbutton_cif.setText('Import CIF')
+        self.toolbutton_cif.setToolTip('Browse for a CIF file\nAlternatively drag-n-drop a CIF file to import it')
         self.toolbutton_cif.clicked.connect(self.importCIFdialog)
         spin_1_layout.addWidget(self.toolbutton_cif)
 
         # energy
         label = QtWidgets.QLabel(text='energy')
         label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        label.setToolTip('X-ray energy (keV)')
         spin_1_layout.addWidget(label,1)
         self.spinbox_E = QtWidgets.QDoubleSpinBox()
         self.spinbox_E.setDecimals(1)
@@ -149,6 +152,7 @@ class ODFexplorer(QMainWindow):
         # centering
         label = QtWidgets.QLabel(text='centering')
         label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        label.setToolTip('Space group centering\nSet to primitive (P) for the most general case')
         spin_1_layout.addWidget(label,1)
         self.combo_centering = QtWidgets.QComboBox()
         self.combo_centering.addItems(['P','F','I','A','B','C'])
@@ -159,6 +163,7 @@ class ODFexplorer(QMainWindow):
         # hklmax
         label = QtWidgets.QLabel(text='<html><head/><body><p>hkl<span style=" vertical-align:sub;">max</span></p></body></html>')
         label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        label.setToolTip('Maximum h, k, and l index to calculate\nAdjust with caution!')
         spin_1_layout.addWidget(label,1)
         self.spinbox_HKLmax = QtWidgets.QSpinBox()
         self.spinbox_HKLmax.setAlignment(QtCore.Qt.AlignLeft)
@@ -181,6 +186,7 @@ class ODFexplorer(QMainWindow):
             self.spinbox_POI[key].setMinimum(-100)
             self.spinbox_POI[key].setMaximum(100)
             label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+            label.setToolTip('Preferred orientation '+key+' index')
             spin_1_layout.addWidget(label,1)
             spin_1_layout.addWidget(self.spinbox_POI[key],1)
 
@@ -191,20 +197,22 @@ class ODFexplorer(QMainWindow):
         # UC input 
         self.spinbox_UC = {key: QtWidgets.QDoubleSpinBox() for key in ['a','b','c','alpha','beta','gamma']}
         for key in self.spinbox_UC:
+            label = QtWidgets.QLabel(text=key)
+            label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
             if key in ['a','b','c']:
                 self.spinbox_UC[key].setDecimals(3)
                 self.spinbox_UC[key].setMinimum(1)
                 self.spinbox_UC[key].setValue(2.866) # alpha-iron  (BCC) 2.866
                 self.spinbox_UC[key].setSingleStep(0.1)
+                label.setToolTip('Unit cell parameter (Å)')
             else:
                 self.spinbox_UC[key].setDecimals(2)
                 self.spinbox_UC[key].setMinimum(60)
                 self.spinbox_UC[key].setMaximum(120)
                 self.spinbox_UC[key].setValue(90)
+                label.setToolTip('Unit cell parameter (°)')
             self.spinbox_UC[key].valueChanged.connect(self.updateUC)
             self.spinbox_UC[key].setAlignment(QtCore.Qt.AlignLeft)
-            label = QtWidgets.QLabel(text=key)
-            label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
             spin_2_layout.addWidget(label,1)
             spin_2_layout.addWidget(self.spinbox_UC[key],1)
 
@@ -216,6 +224,10 @@ class ODFexplorer(QMainWindow):
         self.euler_dials = {}
   
         start_val = {'omega':270,'chi':90,'phi':0}
+        tool_tips = {'omega':'First Euler angle (Y)',
+                    'chi'  :"Second Euler angle (X')",
+                    'phi'  :"Third Euler angle (Y'')",
+                    }
         for dial in ['omega','chi','phi']:
             self.euler_dials[dial] = QtWidgets.QDial()
             self.euler_dials[dial].setMinimum(0)
@@ -230,7 +242,8 @@ class ODFexplorer(QMainWindow):
             self.euler_dial_labels[dial] = QtWidgets.QLabel()
             self.euler_dial_labels[dial].setText(f'{dial}: {self.euler_dials[dial].value():>3d} °')
             self.euler_dial_labels[dial].setAlignment(QtCore.Qt.AlignHCenter)
-            
+            self.euler_dial_labels[dial].setToolTip(tool_tips[dial])
+
             subdial_layout = QtWidgets.QVBoxLayout()
             subdial_layout.addWidget(self.euler_dial_labels[dial])
             subdial_layout.addWidget(self.euler_dials[dial])
@@ -249,6 +262,7 @@ class ODFexplorer(QMainWindow):
         self.eta_dial_label = QtWidgets.QLabel()
         self.eta_dial_label.setText(f'eta: {self.getEtaValue():>3d} °')
         self.eta_dial_label.setAlignment(QtCore.Qt.AlignHCenter)
+        self.eta_dial_label.setToolTip('Azimuthal scattering angle')
         
         subdial_layout = QtWidgets.QVBoxLayout()
         subdial_layout.addWidget(self.eta_dial_label)
@@ -266,6 +280,7 @@ class ODFexplorer(QMainWindow):
         self.MDparam_label = QtWidgets.QLabel()
         self.MDparam_label.setText(f'r: {self.slider_MDparam.value()/100:>3.2f}')
         self.MDparam_label.setAlignment(QtCore.Qt.AlignHCenter)
+        self.MDparam_label.setToolTip('March-Dollase texture parameter')
 
         subdial_layout = QtWidgets.QVBoxLayout()
         subdial_layout.addWidget(self.MDparam_label)
@@ -295,6 +310,63 @@ class ODFexplorer(QMainWindow):
         self.treewidget.setCurrentItem(self.treewidget.topLevelItem(0))
 
         sub_panel_layout.addWidget(self.treewidget,stretch=3)
+        
+        # graphic settings check boxes
+        checkbox_layout = QtWidgets.QVBoxLayout()
+        label = QtWidgets.QLabel()
+        label.setText('Display settings')
+        checkbox_layout.addWidget(label)
+        # goniometer
+        self.checkbox_goniometer = QtWidgets.QCheckBox('goniometer')
+        self.checkbox_goniometer.setChecked(True)
+        self.checkbox_goniometer.stateChanged.connect(self.showGoniometer)
+        self.checkbox_goniometer.setToolTip('Show goniometer guide lines')
+        # axis
+        self.checkbox_axis = QtWidgets.QCheckBox('axis')
+        self.checkbox_axis.setChecked(True)
+        self.checkbox_axis.stateChanged.connect(self.showAxis)
+        self.checkbox_axis.setToolTip('Show xyz axes')
+        # beam
+        self.checkbox_beam = QtWidgets.QCheckBox('scattered beam')
+        self.checkbox_beam.setChecked(True)
+        self.checkbox_beam.stateChanged.connect(self.showBeam)
+        self.checkbox_beam.setToolTip('Show incident (S'+'\u2080'+') and scattered beam (S)')
+        # grid
+        self.checkbox_grid = QtWidgets.QCheckBox('grid')
+        self.checkbox_grid.setChecked(True)
+        self.checkbox_grid.stateChanged.connect(self.showGrid)
+        self.checkbox_grid.setToolTip('Show horizontal plane surface grid')
+        # add to layout
+        checkbox_layout.addWidget(self.checkbox_goniometer)
+        checkbox_layout.addWidget(self.checkbox_axis)
+        checkbox_layout.addWidget(self.checkbox_beam)
+        checkbox_layout.addWidget(self.checkbox_grid)
+        checkbox_layout.addStretch(1)
+        sub_panel_layout.addLayout(checkbox_layout,stretch=1)
+
+    def showGoniometer(self,val):
+        if self.checkbox_goniometer.isChecked():
+            self.sphere_window.addGoniometerLines()
+        else:
+            self.sphere_window.removeGoniometerLines()
+    
+    def showAxis(self,val):
+        if self.checkbox_axis.isChecked():
+            self.sphere_window.addAxis()
+        else:
+            self.sphere_window.removeAxis()
+
+    def showBeam(self,val):
+        if self.checkbox_beam.isChecked():
+            self.sphere_window.addScatterCone()
+        else:
+            self.sphere_window.removeScatterCone()
+
+    def showGrid(self,val):
+        if self.checkbox_grid.isChecked():
+            self.sphere_window.addGrid()
+        else:
+            self.sphere_window.removeGrid()
 
 
     def open_editor(self):
@@ -395,13 +467,16 @@ class ODFexplorer(QMainWindow):
 
     def initI_azi_plots(self):
         self.line_widget.clear()
-        pen = pg.mkPen(color='w')
+        pen = pg.mkPen(color='w',
+                       width=2)
         self.line_plots = {'sum':self.line_widget.plot([0],[0],name='sum',pen=pen)}
         x = self.sample.getEtas()
         I_azis = self.sample.getI_azis()
         for i,hkl in enumerate(I_azis):
             pen = pg.mkPen(color=(i,len(self.sample.getI_azis())),
-                           style=QtCore.Qt.DashLine)
+                           style=QtCore.Qt.DashLine,
+                           width=2,
+                           )
             name = f'{hkl} ({I_azis[hkl][1]})'
             self.line_plots[hkl]=self.line_widget.plot(x,np.ones(x.shape[0]),name=name,pen=pen)
         self.line_widget.addLegend()
@@ -435,6 +510,9 @@ class ODFexplorer(QMainWindow):
         
         self.sphere_window.setSphereValues(ODF)
         self.sphere_window.setPOA(POA)
+        if self.checkbox_goniometer.isChecked():
+            self.sphere_window.updateGoniometerLines(omega,chi,phi)
+        # self.sphere_window.updateGoniometerCircle(omega,chi,phi)
 
         self.updateI_azis()
 
@@ -449,6 +527,9 @@ class ODFexplorer(QMainWindow):
         y = self.line_plots['sum'].getData()[1]
         if y.shape[0]>1:
             self.line_plot_dot.setData([eta],[y[eta]])
+        
+        self.sphere_window.updateScatterCone(self.sample.tth,eta)
+
 
     def getCurrentPOD(self):
         current = self.treewidget.currentItem()

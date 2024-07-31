@@ -30,3 +30,32 @@ def R_yxy(omega=0,chi=0,phi=0):
                   [ so*sc          , cc    , co*sc          ],
                   [ co*sp+cc*cp*so , -cp*sc, co*cc*cp-so*sp ]])
     return(R)
+
+def R_zyz(omega=0,chi=0,phi=0):
+    """
+    ZYZ rotation matrix - Angles in degrees
+    The transpose of R is equal to the inverse of R: R_T = R^-1 and RR_T=E, where E is the identity matrix.
+    """
+    o = omega*np.pi/180
+    c = chi*np.pi/180
+    p = phi*np.pi/180
+    
+    
+    co,cc,cp = np.cos(o),np.cos(c),np.cos(p)
+    so,sc,sp = np.sin(o),np.sin(c),np.sin(p)
+    
+
+    R_z1 = np.array([[ co,-so,  0],
+                    [ so, co,  0],
+                    [  0,  0,  1]])
+    
+    R_y1 = np.array([[ cc,  0, sc],
+                    [  0,  1,  0],
+                    [-sc,  0, cc]])
+    
+    R_z2 = np.array([[cp,-sp, 0],
+                    [sp, cp, 0],
+                    [ 0,  0, 1]])
+
+    R = np.dot(R_z1,np.dot(R_y1,R_z2))
+    return(R)

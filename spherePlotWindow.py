@@ -1,8 +1,8 @@
 import sys
 import numpy as np
 import pyqtgraph.opengl as gl
-from PyQt5.QtWidgets import QApplication
-from PyQt5 import QtGui, QtWidgets
+from PyQt6.QtWidgets import QApplication
+from PyQt6 import QtGui, QtWidgets
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 from misc import vector_euler_angles, rgba_0_1_to_0_255, R_yxy, R_zyz

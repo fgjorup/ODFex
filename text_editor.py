@@ -1,7 +1,7 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTextEdit, QAction, QFileDialog,QMessageBox
-from PyQt5 import QtGui
-from PyQt5.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QApplication, QMainWindow, QTextEdit, QFileDialog,QMessageBox
+from PyQt6.QtGui import QAction, QKeySequence
+from PyQt6.QtCore import pyqtSignal
 
 class TextEditor(QMainWindow):
 
@@ -29,7 +29,7 @@ class TextEditor(QMainWindow):
 
         save_action = QAction("Save", self)
         save_action.triggered.connect(self.save_file)
-        save_action.setShortcut(QtGui.QKeySequence('Ctrl+s'))
+        save_action.setShortcut(QKeySequence('Ctrl+s'))
         
         save_as_action = QAction("Save As", self)
         save_as_action.triggered.connect(self.save_as_file)

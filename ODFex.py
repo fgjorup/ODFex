@@ -2,8 +2,8 @@ import sys
 import os
 import numpy as np
 import pyqtgraph as pg
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QSlider
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt6.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QSlider
+from PyQt6 import QtCore, QtGui, QtWidgets
 import Dans_Diffraction as dif
 from text_editor import TextEditor
 from textureSample import FibreSample
@@ -19,7 +19,7 @@ class ODFexplorer(QMainWindow):
         # set the default geometry of the main window and sphere plot window
         # based on the current screen geometry, such that a margin of 1/6
         # of the screen height is left free around the two windows
-        screen_geometry = QtWidgets.QApplication.instance().desktop().screenGeometry()
+        screen_geometry = QtWidgets.QApplication.instance().primaryScreen().geometry()
         h,w = screen_geometry.height(), screen_geometry.width()
         self.setGeometry(h//6+h//2,    # x pos
                          h//6,         # y pos
@@ -105,7 +105,7 @@ class ODFexplorer(QMainWindow):
         
         # Create menu bar
         menubar = self.menuBar()
-        edit_action = QtWidgets.QAction("Edit CIF", self)
+        edit_action = QtGui.QAction("Edit CIF", self)
         edit_action.triggered.connect(self.open_editor)
         menubar.addAction(edit_action)
 
@@ -140,7 +140,7 @@ class ODFexplorer(QMainWindow):
 
         # energy
         label = QtWidgets.QLabel(text='energy')
-        label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        label.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
         label.setToolTip('X-ray energy (keV)')
         spin_1_layout.addWidget(label,1)
         self.spinbox_E = QtWidgets.QDoubleSpinBox()
@@ -149,13 +149,13 @@ class ODFexplorer(QMainWindow):
         self.spinbox_E.setMaximum(120)
         self.spinbox_E.setValue(35) 
         self.spinbox_E.setSingleStep(1)
-        self.spinbox_E.setAlignment(QtCore.Qt.AlignLeft)
+        self.spinbox_E.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
         self.spinbox_E.valueChanged.connect(self.updateEnergy)
         spin_1_layout.addWidget(self.spinbox_E,1)
 
         # centering
         label = QtWidgets.QLabel(text='centering')
-        label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        label.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
         label.setToolTip('Space group centering\nSet to primitive (P) for the most general case')
         spin_1_layout.addWidget(label,1)
         self.combo_centering = QtWidgets.QComboBox()
@@ -166,11 +166,11 @@ class ODFexplorer(QMainWindow):
 
         # hklmax
         label = QtWidgets.QLabel(text='<html><head/><body><p>hkl<span style=" vertical-align:sub;">max</span></p></body></html>')
-        label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+        label.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
         label.setToolTip('Maximum h, k, and l index to calculate\nAdjust with caution!')
         spin_1_layout.addWidget(label,1)
         self.spinbox_HKLmax = QtWidgets.QSpinBox()
-        self.spinbox_HKLmax.setAlignment(QtCore.Qt.AlignLeft)
+        self.spinbox_HKLmax.setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
         self.spinbox_HKLmax.setMinimum(1)
         self.spinbox_HKLmax.setMaximum(100)
         self.spinbox_HKLmax.setValue(12)
@@ -186,10 +186,10 @@ class ODFexplorer(QMainWindow):
         for key in self.spinbox_POI:
             label = QtWidgets.QLabel(text=key)
             self.spinbox_POI[key].valueChanged.connect(self.updatePOI)
-            self.spinbox_POI[key].setAlignment(QtCore.Qt.AlignLeft)
+            self.spinbox_POI[key].setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
             self.spinbox_POI[key].setMinimum(-100)
             self.spinbox_POI[key].setMaximum(100)
-            label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+            label.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
             label.setToolTip('Preferred orientation '+key+' index')
             spin_1_layout.addWidget(label,1)
             spin_1_layout.addWidget(self.spinbox_POI[key],1)
@@ -202,7 +202,7 @@ class ODFexplorer(QMainWindow):
         self.spinbox_UC = {key: QtWidgets.QDoubleSpinBox() for key in ['a','b','c','alpha','beta','gamma']}
         for key in self.spinbox_UC:
             label = QtWidgets.QLabel(text=key)
-            label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
+            label.setAlignment(QtCore.Qt.AlignmentFlag.AlignRight | QtCore.Qt.AlignmentFlag.AlignVCenter)
             if key in ['a','b','c']:
                 self.spinbox_UC[key].setDecimals(3)
                 self.spinbox_UC[key].setMinimum(1)
@@ -216,7 +216,7 @@ class ODFexplorer(QMainWindow):
                 self.spinbox_UC[key].setValue(90)
                 label.setToolTip('Unit cell parameter (°)')
             self.spinbox_UC[key].valueChanged.connect(self.updateUC)
-            self.spinbox_UC[key].setAlignment(QtCore.Qt.AlignLeft)
+            self.spinbox_UC[key].setAlignment(QtCore.Qt.AlignmentFlag.AlignLeft)
             spin_2_layout.addWidget(label,1)
             spin_2_layout.addWidget(self.spinbox_UC[key],1)
 
@@ -245,7 +245,7 @@ class ODFexplorer(QMainWindow):
 
             self.euler_dial_labels[dial] = QtWidgets.QLabel()
             self.euler_dial_labels[dial].setText(f'{dial}: {self.euler_dials[dial].value():>3d} °')
-            self.euler_dial_labels[dial].setAlignment(QtCore.Qt.AlignHCenter)
+            self.euler_dial_labels[dial].setAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter)
             self.euler_dial_labels[dial].setToolTip(tool_tips[dial])
 
             subdial_layout = QtWidgets.QVBoxLayout()
@@ -265,7 +265,7 @@ class ODFexplorer(QMainWindow):
 
         self.eta_dial_label = QtWidgets.QLabel()
         self.eta_dial_label.setText(f'eta: {self.getEtaValue():>3d} °')
-        self.eta_dial_label.setAlignment(QtCore.Qt.AlignHCenter)
+        self.eta_dial_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter)
         self.eta_dial_label.setToolTip('Azimuthal scattering angle')
         
         subdial_layout = QtWidgets.QVBoxLayout()
@@ -274,7 +274,7 @@ class ODFexplorer(QMainWindow):
         subdial_layout.addStretch()
         dial_layout.addLayout(subdial_layout,stretch=1)
         
-        self.slider_MDparam = QSlider(QtCore.Qt.Vertical)
+        self.slider_MDparam = QSlider(QtCore.Qt.Orientation.Vertical)
         self.slider_MDparam.setMinimum(1)
         self.slider_MDparam.setMaximum(100)
         self.slider_MDparam.setPageStep(1)
@@ -283,7 +283,7 @@ class ODFexplorer(QMainWindow):
         
         self.MDparam_label = QtWidgets.QLabel()
         self.MDparam_label.setText(f'r: {self.slider_MDparam.value()/100:>3.2f}')
-        self.MDparam_label.setAlignment(QtCore.Qt.AlignHCenter)
+        self.MDparam_label.setAlignment(QtCore.Qt.AlignmentFlag.AlignHCenter)
         self.MDparam_label.setToolTip('March-Dollase texture parameter')
 
         subdial_layout = QtWidgets.QVBoxLayout()
@@ -297,7 +297,7 @@ class ODFexplorer(QMainWindow):
         self.treewidget.header().setStretchLastSection(False)
         self.treewidget.header().setSectionResizeMode(self.treewidget.header().ResizeMode.ResizeToContents)
         
-        [self.treewidget.headerItem().setTextAlignment(i,QtCore.Qt.AlignHCenter) for i in range(5)]
+        [self.treewidget.headerItem().setTextAlignment(i,QtCore.Qt.AlignmentFlag.AlignHCenter) for i in range(5)]
         self.treewidget.headerItem().setToolTip(0,'h-index')
         self.treewidget.headerItem().setToolTip(1,'k-index')
         self.treewidget.headerItem().setToolTip(2,'l-index')
@@ -478,7 +478,7 @@ class ODFexplorer(QMainWindow):
         I_azis = self.sample.getI_azis()
         for i,hkl in enumerate(I_azis):
             pen = pg.mkPen(color=(i,len(self.sample.getI_azis())),
-                           style=QtCore.Qt.DashLine,
+                           style=QtCore.Qt.PenStyle.DashLine,
                            width=2,
                            )
             name = f'{hkl} ({I_azis[hkl][1]})'
@@ -563,18 +563,18 @@ class ODFexplorer(QMainWindow):
             item = QtWidgets.QTreeWidgetItem(self.treewidget)
             for i,val in enumerate(h):
                 item.setText(i,f'{val:2d}')
-                item.setTextAlignment(i,QtCore.Qt.AlignTrailing)
+                item.setTextAlignment(i,QtCore.Qt.AlignmentFlag.AlignTrailing)
             item.setText(3,f'{d:6.3f}')
             item.setText(4,f'{tth:6.2f}')
-            item.setTextAlignment(3,QtCore.Qt.AlignTrailing)
-            item.setTextAlignment(4,QtCore.Qt.AlignTrailing)
+            item.setTextAlignment(3,QtCore.Qt.AlignmentFlag.AlignTrailing)
+            item.setTextAlignment(4,QtCore.Qt.AlignmentFlag.AlignTrailing)
             for _hkl in hkl_sets[hkl]:
                 if not np.all(_hkl == np.array(hkl.split(),dtype=int)):
                     _item = QtWidgets.QTreeWidgetItem(item)
                     _hkld = list(_hkl)+[]
                     for i,val in enumerate(_hkld):
                         _item.setText(i,f'{val}')
-                        _item.setTextAlignment(i,QtCore.Qt.AlignTrailing)
+                        _item.setTextAlignment(i,QtCore.Qt.AlignmentFlag.AlignTrailing)
         
         self.treewidget.sortItems(3,QtCore.Qt.SortOrder.DescendingOrder)
         current = self.treewidget.findItems(f'{self.sample.d:.4f}',QtCore.Qt.MatchFlag.MatchContains,3)
@@ -588,7 +588,7 @@ class ODFexplorer(QMainWindow):
             hkl = [int(item.text(i)) for i in range(3)]
             pod_angle = self.sample.getAngleBetweenHKLs(self.sample.POI,hkl)
             item.setText(5,f'{pod_angle:.0f}')
-            item.setTextAlignment(5,QtCore.Qt.AlignTrailing)
+            item.setTextAlignment(5,QtCore.Qt.AlignmentFlag.AlignTrailing)
         current.sortChildren(5,QtCore.Qt.SortOrder.AscendingOrder)
     
     def setHKL(self,current,previous):
@@ -617,7 +617,7 @@ def main():
     icon = QtGui.QIcon('ODFex_logo.png')
     odf_ex = ODFexplorer(icon=icon)
     odf_ex.show()
-    sys.exit(app.exec_())
+    sys.exit(app.exec())
 
 if __name__ == '__main__':
     main()
